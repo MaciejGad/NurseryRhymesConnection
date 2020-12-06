@@ -2,11 +2,11 @@ import Foundation
 
 #if canImport(UIKit)
 import UIKit
-typealias Image = UIImage
+public typealias Image = UIImage
 #else
-struct Image {
+public struct Image {
     let data: Data
-    init?(data: Data) {
+    public init?(data: Data) {
         if data.isEmpty {
             return nil
         }
@@ -15,11 +15,12 @@ struct Image {
 }
 #endif
 
-protocol ImageDownloaderInput {
+public protocol ImageDownloaderInput {
     func fetch(url: URL, completion: @escaping (Result<Image, ConnectionError>) -> Void)
+    func fetch(file: String, completion: @escaping (Result<Image, ConnectionError>) -> Void)
 }
 
-final class ImageDownloader: ImageDownloaderInput {
+public final class ImageDownloader: ImageDownloaderInput {
     private let call: CallInput
     private let outputQueue: DispatchQueue
     
@@ -35,7 +36,20 @@ final class ImageDownloader: ImageDownloaderInput {
         self.baseURL = baseURL
     }
     
-    func fetch(url: URL, completion: @escaping (Result<Image, ConnectionError>) -> Void) {
+    public func fetch(file: String, completion: @escaping (Result<Image, ConnectionError>) -> Void) {
+        guard let filename = file.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+            completion(.failure(.malformedUrl))
+            return
+        }
+        guard let url = URL(string: filename, relativeTo: baseURL) else {
+            assertionFailure("Can't load url")
+            completion(.failure(.malformedUrl))
+            return
+        }
+        fetch(url: url, completion: completion)
+    }
+    
+    public func fetch(url: URL, completion: @escaping (Result<Image, ConnectionError>) -> Void) {
         let outputQueue = self.outputQueue
         let failure: (ConnectionError) -> Void = { error in
             outputQueue.asyncIfNeeded {
