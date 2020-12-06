@@ -6,6 +6,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(RhymeListProviderTest.allTests),
         testCase(BookListForRhymeProviderTest.allTests),
         testCase(SingleRhymeProviderTest.allTests),
+        testCase(ImageDownloaderTest.allTests),
     ]
 }
 #endif
