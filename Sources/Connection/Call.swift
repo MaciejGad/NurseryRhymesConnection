@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol CallInput {
-    func get(url: URL, completion: @escaping (Result<Data?, ConnectionError>) -> Void)
+    @discardableResult func get(url: URL, completion: @escaping (Result<Data?, ConnectionError>) -> Void) -> Task
 }
 
 final class Call: CallInput {
@@ -12,7 +12,7 @@ final class Call: CallInput {
     }
     
     //In the real-life application I should handle more HTTP methods, not only GET. I should also use dataTask with a request to provide the ability to add headers (i.e. with authorization) or body (i.e. for POST)
-    func get(url: URL, completion: @escaping (Result<Data?, ConnectionError>) -> Void) {
+    @discardableResult func get(url: URL, completion: @escaping (Result<Data?, ConnectionError>) -> Void) -> Task {
         let task = session.dataTask(with: url) { (data, aResponse, anError) in
             if let error = anError {
                 completion(.failure(.response(error)))
@@ -31,25 +31,6 @@ final class Call: CallInput {
             completion(.success(data))
         }
         task.resume()
-    }
-}
-
-public class CallMock: CallInput {
-    public var response: Result<Data?, ConnectionError>
-    
-    public init(response: Result<Data?, ConnectionError>) {
-        self.response = response
-    }
-    
-    public init(success data: Data?) {
-        self.response = .success(data)
-    }
-    
-    public init(failure error: ConnectionError) {
-        self.response = .failure(error)
-    }
-    
-    public func get(url: URL, completion: @escaping (Result<Data?, ConnectionError>) -> Void) {
-        completion(response)
+        return CallTask(task: task)
     }
 }

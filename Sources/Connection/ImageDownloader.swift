@@ -16,8 +16,8 @@ public struct Image {
 #endif
 
 public protocol ImageDownloaderInput {
-    func fetch(url: URL, completion: @escaping (Result<Image, ConnectionError>) -> Void)
-    func fetch(file: String, completion: @escaping (Result<Image, ConnectionError>) -> Void)
+    @discardableResult func fetch(url: URL, completion: @escaping (Result<Image, ConnectionError>) -> Void) -> Task
+    @discardableResult func fetch(file: String, completion: @escaping (Result<Image, ConnectionError>) -> Void) -> Task
 }
 
 public final class ImageDownloader: ImageDownloaderInput {
@@ -36,20 +36,20 @@ public final class ImageDownloader: ImageDownloaderInput {
         self.baseURL = baseURL
     }
     
-    public func fetch(file: String, completion: @escaping (Result<Image, ConnectionError>) -> Void) {
+    @discardableResult public func fetch(file: String, completion: @escaping (Result<Image, ConnectionError>) -> Void) -> Task {
         guard let filename = file.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
             completion(.failure(.malformedUrl))
-            return
+            return ComplitedTask()
         }
         guard let url = URL(string: filename, relativeTo: baseURL) else {
             assertionFailure("Can't load url")
             completion(.failure(.malformedUrl))
-            return
+            return ComplitedTask()
         }
-        fetch(url: url, completion: completion)
+        return fetch(url: url, completion: completion)
     }
     
-    public func fetch(url: URL, completion: @escaping (Result<Image, ConnectionError>) -> Void) {
+    @discardableResult public func fetch(url: URL, completion: @escaping (Result<Image, ConnectionError>) -> Void) -> Task {
         let outputQueue = self.outputQueue
         let failure: (ConnectionError) -> Void = { error in
             outputQueue.asyncIfNeeded {
@@ -61,7 +61,7 @@ public final class ImageDownloader: ImageDownloaderInput {
                 completion(.success(image))
             }
         }
-        call.get(url: url) { result in
+        return call.get(url: url) { result in
             switch result {
             case .success(let aData):
                 guard let data = aData, !data.isEmpty else {
