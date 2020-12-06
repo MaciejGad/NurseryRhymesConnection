@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Models",
+        "repositoryURL": "https://github.com/MaciejGad/NurseryRhymesModels",
+        "state": {
+          "branch": "main",
+          "revision": "97e6f2bee92e16609f17c0a170bb5c53989a8cb3",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
