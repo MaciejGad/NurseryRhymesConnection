@@ -7,7 +7,6 @@ public protocol RhymeListProviderInput {
 
 public final class RhymeListProvider: DecodingProvider<List>, RhymeListProviderInput {
     
-    
     private lazy var endpoint = URL(string: "list.json", relativeTo: baseURL)
     
     public func fetchList(completion: @escaping (Result<List, ConnectionError>) -> Void) {

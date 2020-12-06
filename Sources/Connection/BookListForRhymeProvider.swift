@@ -20,6 +20,4 @@ public final class BookListForRhymeProvider: DecodingProvider<BookListForRhyme>,
         }
         fetch(url: url, completion: completion)
     }
-    
 }
-

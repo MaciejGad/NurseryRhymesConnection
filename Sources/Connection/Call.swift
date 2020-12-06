@@ -10,7 +10,8 @@ final class Call: CallInput {
     init(session: URLSession = .shared) {
         self.session = session
     }
-    //In the real-life application, we should handle more HTTP methods, not only GET. We should also use dataTask with a request to provide the ability to add headers (i.e. with authorization) or body (i.e. for POST)
+    
+    //In the real-life application I should handle more HTTP methods, not only GET. I should also use dataTask with a request to provide the ability to add headers (i.e. with authorization) or body (i.e. for POST)
     func get(url: URL, completion: @escaping (Result<Data?, ConnectionError>) -> Void) {
         let task = session.dataTask(with: url) { (data, aResponse, anError) in
             if let error = anError {

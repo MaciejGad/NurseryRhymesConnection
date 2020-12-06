@@ -19,6 +19,4 @@ public final class SingleRhymeProvider: DecodingProvider<Rhyme>, SingleRhymeProv
         }
         fetch(url: url, completion: completion)
     }
-    
 }
-

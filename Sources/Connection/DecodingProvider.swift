@@ -19,16 +19,15 @@ public class DecodingProvider<T: Decodable> {
     }
     
     public func fetch(url: URL, completion: @escaping (Result<T, ConnectionError>) -> Void) {
-        let wrappedFailure: (ConnectionError) -> Void = { [weak self] error in
-            let outputQueue = self?.outputQueue ?? .main
+        let outputQueue = self.outputQueue
+        let failure: (ConnectionError) -> Void = { error in
             outputQueue.asyncIfNeeded {
                 completion(.failure(error))
             }
         }
-        let wrappedSuccess: (T) -> Void = { [weak self] list in
-            let outputQueue = self?.outputQueue ?? .main
+        let success: (T) -> Void = { item in
             outputQueue.asyncIfNeeded {
-                completion(.success(list))
+                completion(.success(item))
             }
         }
         let jsonDecoder = self.jsonDecoder
@@ -36,21 +35,18 @@ public class DecodingProvider<T: Decodable> {
             switch result {
             case .success(let aData):
                 guard let data = aData, !data.isEmpty else {
-                    wrappedFailure(.emptyResponse)
+                    failure(.emptyResponse)
                     return
                 }
                 do {
                     let result = try jsonDecoder.decode(T.self, from: data)
-                    wrappedSuccess(result)
+                    success(result)
                 } catch {
-                    wrappedFailure(.decodeError(error))
+                    failure(.decodeError(error))
                 }
             case .failure(let error):
-                wrappedFailure(error)
+                failure(error)
             }
         }
     }
-    
-    
 }
-
