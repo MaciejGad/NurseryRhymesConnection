@@ -5,6 +5,7 @@ import Models
 
 final class RhymeListProviderTest: XCTestCase {
     var sut: RhymeListProvider!
+    var baseURL: URL!
     
     override func setUp() {
         super.setUp()
@@ -12,19 +13,21 @@ final class RhymeListProviderTest: XCTestCase {
         let configuration = URLSessionConfiguration.default
            configuration.protocolClasses = [MockURLProtocol.self]
         let urlSession = URLSession(configuration: configuration)
-        sut = RhymeListProvider(session: urlSession)
+        baseURL = URL(string: testingDomain)!
+        sut = RhymeListProvider(baseURL: baseURL, session: urlSession)
     }
     
     override func tearDown() {
         sut = nil
         MockURLProtocol.requestHandler = nil
+        baseURL = nil
         super.tearDown()
     }
     
     func testSuccess() {
         //given
         MockURLProtocol.requestHandler = { request in
-            XCTAssertEqual(request.url?.absoluteString, "https://maciejgad.github.io/NurseryRhymesJSON/data/list.json")
+            XCTAssertEqual(request.url?.absoluteString, "\(testingDomain)/list.json")
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             let data = listJSON.data(using: .utf8)
             return (response, data)
@@ -40,6 +43,7 @@ final class RhymeListProviderTest: XCTestCase {
             case .failure(let error):
                 XCTFail("\(error)")
             }
+            XCTAssertTrue(Thread.isMainThread)
             expectation.fulfill()
         }
         
@@ -55,14 +59,14 @@ final class RhymeListProviderTest: XCTestCase {
     func testFailure() {
         //given
         MockURLProtocol.requestHandler = { request in
-            XCTAssertEqual(request.url?.absoluteString, "https://maciejgad.github.io/NurseryRhymesJSON/data/list.json")
+            XCTAssertEqual(request.url?.absoluteString, "\(testingDomain)/list.json")
             let response = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
             return (response, nil)
         }
         let expectation = self.expectation(description: "fetch")
         
         //when
-        var error: RhymeListProviderError? = nil
+        var error: ConnectionError? = nil
         sut.fetchList { (result) in
             switch result {
             case .failure(let anError):
@@ -70,6 +74,7 @@ final class RhymeListProviderTest: XCTestCase {
             case .success:
                 XCTFail("Success shouldn't be called")
             }
+            XCTAssertTrue(Thread.isMainThread)
             expectation.fulfill()
         }
         
@@ -80,7 +85,7 @@ final class RhymeListProviderTest: XCTestCase {
             XCTAssertEqual(code, 500)
             XCTAssertEqual(data?.count, 0)
         } else {
-            XCTFail("Error should be RhymeListProviderError.httpError")
+            XCTFail("Error should be ConnectionError.httpError")
         }
     }
     
@@ -91,3 +96,5 @@ final class RhymeListProviderTest: XCTestCase {
 }
 
 fileprivate let listJSON = #"{"results":[{"rhymeId":"01_the_three_children","title":"THE THREE CHILDREN","image":"https:\/\/maciejgad.github.io\/NurseryRhymesJSON\/images\/01_the_three_children.jpg"},{"rhymeId":"02_kindness_to_animals","title":"KINDNESS TO ANIMALS","image":"https:\/\/maciejgad.github.io\/NurseryRhymesJSON\/images\/02_kindness_to_animals.jpg"},{"rhymeId":"03_how_doth_the_little_busy_bee","author":"Isaac Watts","title":"HOW DOTH THE LITTLE BUSY BEE","image":"https:\/\/maciejgad.github.io\/NurseryRhymesJSON\/images\/03_how_doth_the_little_busy_bee.jpg"},{"rhymeId":"04_twinkle_twinkle","title":"TWINKLE, TWINKLE","image":"https:\/\/maciejgad.github.io\/NurseryRhymesJSON\/images\/04_twinkle_twinkle.jpg"}]}"#
+
+fileprivate let testingDomain = "https://testing.io"
