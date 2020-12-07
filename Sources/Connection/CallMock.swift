@@ -22,6 +22,8 @@ open class CallMock: CallInput {
 }
 
 open class ComplitedTask: Task {
+    public init() {}
+    
     open var state: TaskState {
         .finished
     }
