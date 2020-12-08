@@ -12,7 +12,7 @@ public final class BookListForRhymeProvider: DecodingProvider<BookListForRhyme>,
             completion(.failure(.malformedUrl))
             return
         }
-        let filename = "book/\(encodedId).json"
+        let filename = "books/\(encodedId).json"
         guard let url = URL(string: filename, relativeTo: baseURL) else {
             assertionFailure("Can't load url")
             completion(.failure(.malformedUrl))
